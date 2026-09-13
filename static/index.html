@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Identificar documento — PoC</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --card: #1a2332;
+      --text: #e8eef7;
+      --muted: #9aa8bc;
+      --accent: #3d9cf0;
+      --ok: #3ecf8e;
+      --warn: #e6b84d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    main {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+    h1 { font-size: 1.35rem; font-weight: 600; margin: 0 0 0.35rem; }
+    p.lead { color: var(--muted); margin: 0 0 1.5rem; }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; }
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      resize: vertical;
+      background: #0f1419;
+      color: var(--text);
+      border: 1px solid #2c3a4e;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.9rem;
+    }
+    .acoes { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.85rem 0; }
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 0.55rem 0.9rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    button.primario { background: var(--accent); color: #041018; font-weight: 600; }
+    button.exemplo { background: #243044; color: var(--text); }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.92rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 0.4rem;
+    }
+    .ok { background: #163d2e; color: var(--ok); }
+    .warn { background: #3d3420; color: var(--warn); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Identificar documento</h1>
+    <p class="lead">
+      Cole o texto do PDF (ou use um exemplo) e veja tipo, modelo e confiança.
+    </p>
+
+    <div class="card">
+      <label for="texto">Texto extraído</label>
+      <textarea id="texto" placeholder="Cole aqui o texto do PDF..."></textarea>
+      <div class="acoes">
+        <button class="primario" type="button" id="btn">Identificar</button>
+        <button class="exemplo" type="button" data-ex="darf">Exemplo DARF</button>
+        <button class="exemplo" type="button" data-ex="iss">Exemplo ISS PoA</button>
+        <button class="exemplo" type="button" data-ex="contrato">Exemplo Desconhecido</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div>
+        Resultado
+        <span id="flag"></span>
+      </div>
+      <pre id="saida">Aguardando…</pre>
+    </div>
+  </main>
+  <script>
+    const exemplos = {
+      darf: "Documento de Arrecadação de Receitas Federais\nMinistério da Fazenda Secretaria da Receita Federal do Brasil\nDARF código da receita 2089\nContribuinte: Empresa Exemplo 104 LTDA CNPJ 12.345.678/0001-90\nVencimento 20/04/2026 valor total R$ 1.234,56",
+      iss: "Prefeitura de Porto Alegre\nISSQN Imposto Sobre Serviços de Qualquer Natureza\nGuia de recolhimento municipal\nContribuinte CNPJ 98.765.432/0001-10\nVencimento 10/05/2026 valor R$ 890,00",
+      contrato: "Contrato de prestação de serviços cláusula primeira\nAs partes acima identificadas têm entre si justo e contratado\nPedido de compra ordem 4521 quantidade 10 unidades"
+    };
+
+    document.querySelectorAll("button.exemplo").forEach((b) => {
+      b.addEventListener("click", () => {
+        document.getElementById("texto").value = exemplos[b.dataset.ex];
+      });
+    });
+
+    document.getElementById("btn").addEventListener("click", async () => {
+      const texto = document.getElementById("texto").value;
+      const saida = document.getElementById("saida");
+      const flag = document.getElementById("flag");
+      saida.textContent = "Consultando…";
+      flag.textContent = "";
+      const r = await fetch("/v1/identify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: texto })
+      });
+      const data = await r.json();
+      saida.textContent = JSON.stringify(data, null, 2);
+      if (data.needs_review) {
+        flag.className = "badge warn";
+        flag.textContent = "precisa revisão";
+      } else {
+        flag.className = "badge ok";
+        flag.textContent = "confiança ok";
+      }
+    });
+  </script>
+</body>
+</html>
