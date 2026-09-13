@@ -50,6 +50,7 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python -m src.prepare_dataset
+python -m src.train
 ```
 
 CSV goes to `data/processed/documents.csv` (`text`, `model`, `type`).
