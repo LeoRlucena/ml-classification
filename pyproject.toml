@@ -1,13 +1,23 @@
 [project]
 name = "ml-classification"
 version = "0.1.0"
-description = "Add your description here"
+description = "Document classifier trained from synthetic extracted text"
 readme = "README.md"
 authors = [
     { name = "Leonardo Lucena", email = "leorlucena@gmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "fastapi>=0.115.0",
+    "joblib>=1.4.2",
+    "matplotlib>=3.9.2",
+    "pandas>=2.2.3",
+    "pydantic>=2.9.2",
+    "pypdf>=5.0.0",
+    "python-multipart>=0.0.9",
+    "scikit-learn>=1.5.2",
+    "uvicorn>=0.30.6",
+]
 
 [project.scripts]
 ml-classification = "ml_classification:main"

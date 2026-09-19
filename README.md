@@ -3,30 +3,29 @@
 ## O problema (em uma frase)
 
 Today, PerfectAPP decides the PDF model with hundreds of `if (texto.Contains(...))`.
-Each new payment instruction need a new code.
+Each new payment instruction needs a new code.
 Here, I try a classifier: **extracted text → model**.
 
 ## Steps
 
-1. Generate anonymized dataset: `python -m src.prepare_dataset`
-2. Train and measure: `python -m src.train`
+1. Generate anonymized dataset: `uv run python -m src.prepare_dataset`
+2. Train and measure: `uv run python -m src.train`
    - Terminal report + `data/processed/confusion_matrix.png`
    - Model in `models/classify_document.joblib`
-3. API: `python -m src.api` → open http://127.0.0.1:8000
+3. API: `uv run python -m src.api` → open http://127.0.0.1:8000
 
-## Run API 
+## Run API
 
-```powershell
-.\.venv\Scripts\Activate.ps1
-python -m src.api
+```bash
+uv run python -m src.api
 ```
 
 Browser: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 Or `curl`:
 
-```powershell
-curl -s http://127.0.0.1:8000/v1/identify -H "Content-Type: application/json" -d "{\"text\": \"Documento de Arrecadação de Receitas Federais DARF código da receita 2089\"}"
+```bash
+curl -s http://127.0.0.1:8000/v1/identify -H "Content-Type: application/json" -d '{"text": "Documento de Arrecadação de Receitas Federais DARF código da receita 2089"}'
 ```
 
 Typical Response:
@@ -45,13 +44,13 @@ Typical Response:
 
 ## Setup
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-python -m src.prepare_dataset
-python -m src.train
+```bash
+uv sync
+uv run python -m src.prepare_dataset
+uv run python -m src.train
 ```
 
-CSV goes to `data/processed/documents.csv` (`text`, `model`, `type`).
+This project uses uv to create and manage the virtual environment and dependencies, so there is no need to call `python -m venv` or `pip install` manually.
+
+CSV goes to `data/processed/dataset.csv` (`text`, `model`, `type`).
 CNPJs, dates and values are `[CNPJ]`, `[DATE]`, `[VALUE]`.
